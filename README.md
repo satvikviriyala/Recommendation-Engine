@@ -49,7 +49,4 @@ This project demonstrates the end-to-end development and deployment of a high-th
 *   `requirements.txt`: Python dependencies.
 *   `README.md`: This file.
 
-**Setup & Usage:** (Detailed instructions in the full guide below or linked documentation)
 
-**(Link to Full Guide/Documentation)**
-**(Link to Live Demo if applicable)**
