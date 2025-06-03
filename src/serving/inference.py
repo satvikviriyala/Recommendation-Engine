@@ -48,8 +48,16 @@ class RecommendationModel:
             self.item_index_to_id = pd.Series(self.item_map.item_id.values, index=self.item_map.item_index).to_dict()
             logger.info(f"Loaded {len(self.user_map)} users, {len(self.item_map)} items.")
         except Exception as e:
-            logger.error(f"Failed to load user/item maps: {e}. Ensure paths are correct and accessible.")
-            raise
+            logger.error(f"Failed to load user/item maps: {e}. Ensure paths are correct and accessible.", exc_info=True)
+            # Service cannot operate without maps
+            msg = "CRITICAL: Failed to load user/item maps. Service cannot start."
+            logger.critical(msg)
+            raise RuntimeError(msg) from e
+
+        if self.user_map is None or self.item_map is None:
+            msg = "CRITICAL: User/item maps are None after loading attempt. Service cannot start."
+            logger.critical(msg)
+            raise RuntimeError(msg)
 
         # --- Load CF Model (Spark ALS) ---
         try:
@@ -82,9 +90,21 @@ class RecommendationModel:
             logger.info(f"CB (TF-IDF) vectorizer and matrix loaded successfully. Matrix shape: {self.item_tfidf_matrix.shape}")
 
         except Exception as e:
-            logger.error(f"Failed to load CB model '{self.cb_model_name}' (Stage: {self.model_stage}): {e}")
+            logger.error(f"Failed to load CB model '{self.cb_model_name}' (Stage: {self.model_stage}): {e}", exc_info=True)
             self.tfidf_vectorizer = None
             self.item_tfidf_matrix = None
+
+        # Check if at least one model loaded successfully
+        if self.als_model is None and (self.tfidf_vectorizer is None or self.item_tfidf_matrix is None):
+            msg = "CRITICAL: Neither CF (ALS) nor CB (TF-IDF) model components could be loaded. Service cannot provide recommendations."
+            logger.critical(msg)
+            raise RuntimeError(msg)
+        elif self.als_model is None:
+            logger.warning("CF (ALS) model failed to load. Service will rely solely on CB model if available.")
+        elif self.tfidf_vectorizer is None or self.item_tfidf_matrix is None:
+            logger.warning("CB (TF-IDF) model failed to load. Service will rely solely on CF model if available.")
+        else:
+            logger.info("Both CF and CB model components loaded successfully or their loading was attempted.")
 
 
     def get_cf_recommendations(self, user_id: int, k: int) -> list:
@@ -98,14 +118,15 @@ class RecommendationModel:
 
         user_index = self.user_id_to_index[user_id]
         try:
-            # Spark models loaded via pyfunc often expect pandas DataFrame input
-            user_df = pd.DataFrame({'user_index': [user_index]})
-            # The pyfunc wrapper for ALS might directly support recommendForUserSubset
-            # Or you might need to call predict on all items (less efficient)
-            # This depends heavily on how mlflow.spark.log_model wrapped it.
-            # Assuming a predict method exists or was added via pyfunc customization:
-            # Let's simulate recommendForAllUsers logic if direct subset isn't obvious
-            # This is INEFFICIENT for many users, recommendForUserSubset is preferred in Spark
+            # The Spark ALS model loaded via mlflow.pyfunc typically expects a Pandas DataFrame
+            # with columns matching the feature names used during 'log_model' (e.g., 'user_index', 'item_index').
+            # The current implementation simulates 'recommendForAllItems' for a specific user by
+            # creating a DataFrame with all possible items for that user and then predicting ratings.
+            # This can be inefficient for a large number of items.
+            # If the MLflow PyFunc model was created with a custom wrapper that exposes a
+            # 'recommendForUserSubset'-like capability, that would be more performant.
+            # For now, we proceed with this approach, assuming the number of items is manageable
+            # for this per-request scoring, or that the pyfunc model internally optimizes this.
             num_items = len(self.item_id_to_index)
             items_to_score = pd.DataFrame({
                 'user_index': [user_index] * num_items,

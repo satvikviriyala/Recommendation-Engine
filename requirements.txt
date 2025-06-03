@@ -16,7 +16,6 @@ requests # For health checks etc.
 # Cloud SDKs (Choose based on target cloud)
 boto3 # For AWS
 google-cloud-storage # For GCP
-google-cloud-secret-manager # For GCP secrets
 
 # Utilities
 pyyaml==6.0.1
