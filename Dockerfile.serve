@@ -1,33 +1,33 @@
-# Use an official Python runtime as a parent image
-FROM python:3.10-slim
+# Use Python 3.9 slim image
+FROM python:3.9-slim
 
-# Set the working directory in the container
+# Set working directory
 WORKDIR /app
 
-# Set environment variables to prevent Python from writing .pyc files and buffering stdout
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    openjdk-11-jdk \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install system dependencies that might be needed by Python packages
-# (e.g., build-essential for some packages, libgomp1 for lightgbm/xgboost if used)
-# RUN apt-get update && apt-get install -y --no-install-recommends     #     build-essential     #  && rm -rf /var/lib/apt/lists/*
+# Set Java home
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+ENV PATH=$PATH:$JAVA_HOME/bin
 
-# Copy the requirements file into the container
+# Copy requirements first to leverage Docker cache
 COPY requirements.txt .
-
-# Install Python dependencies
-# Consider using a virtual environment if preferred
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the application code into the container
-COPY ./src /app/src
-COPY ./configs /app/configs
-# Ensure .env is NOT copied if it contains secrets. Use .env.example or k8s secrets.
+# Copy application code
+COPY src/ src/
+COPY configs/ configs/
+COPY .env .
 
-# Expose the port the app runs on
+# Set environment variables
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+
+# Expose port
 EXPOSE 8000
 
-# Define the command to run the application
-# This assumes your FastAPI app is started with uvicorn in src/serving/api.py
-# Adjust if your entrypoint is different
-CMD ["uvicorn", "src.serving.api:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the application
+CMD ["python", "src/serving/serve.py"] 
