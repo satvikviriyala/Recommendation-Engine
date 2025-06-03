@@ -17,7 +17,7 @@ spec:
       containers:
       - name: recsys-api-container
         # --- IMPORTANT: Replace with your actual image registry/name/tag ---
-        image: your-registry/your-repo/recsys-serve:latest
+        image: your-docker-registry/your-image-name:your-tag # TODO: Replace with your actual image URI
         ports:
         - containerPort: 8000
         env:

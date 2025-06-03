@@ -1,3 +1,12 @@
+# NOTE: The quantization examples below are primarily for neural network models (e.g., PyTorch, TensorFlow)
+# converted to ONNX. They are not directly applicable to Spark MLlib ALS models or Scikit-learn TF-IDF.
+# Optimization for ALS often involves tuning Spark job parameters, efficient data formats,
+# and scaling the Spark cluster. For TF-IDF based content similarity, optimizations could include
+# using approximate nearest neighbor search (e.g., FAISS, Annoy) if the item set is very large,
+# or pre-calculating item-item similarity matrices.
+# The serving layer itself can be optimized by adjusting worker counts, using batching if applicable,
+# and ensuring efficient loading and access to model artifacts.
+
 import os
 import mlflow
 # Import quantization libraries if used (e.g., torch, onnx, onnxruntime)

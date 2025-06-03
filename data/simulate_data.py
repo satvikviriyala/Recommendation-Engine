@@ -1,3 +1,7 @@
+# To run this script directly from the project root, ensure the root directory is in your PYTHONPATH:
+# export PYTHONPATH=$PYTHONPATH:.
+# Alternatively, run as a module: python -m data.simulate_data
+
 import pandas as pd
 import numpy as np
 import os
@@ -71,5 +75,4 @@ def simulate_data():
     logger.info(f"Items -> {proc_cfg['raw_items_path']}")
 
 if __name__ == "__main__":
-    from src.utils.logging_utils import setup_logger # Relative import fix
     simulate_data()

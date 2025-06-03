@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: recsys-config # Name referenced in deployment.yaml
+  # namespace: your-namespace # Optional: specify namespace if not default
+data:
+  # MLflow Configuration
+  mlflow.tracking.uri: "http://mlflow-service.mlflow-namespace.svc.cluster.local:5000" # Example: K8s internal service URI for MLflow
+
+  # Cloud Storage Configuration
+  # These should be the actual bucket names or paths accessible by the pods
+  # Replace with your actual bucket URIs and uncomment the appropriate one for your cloud provider.
+  data.bucket: "gs://your-gcs-bucket-name/data" # Example for GCS
+  # data.bucket: "s3://your-s3-bucket-name/data" # Example for S3
+  model.artifact.bucket: "gs://your-gcs-bucket-name/artifacts" # Example for GCS
+  # model.artifact.bucket: "s3://your-s3-bucket-name/artifacts" # Example for S3
+
+  # Model Configuration (optional, if not solely from .env or defaults in code)
+  # These can be used to override defaults if needed.
+  # model.stage: "Production"
+  # model.name.cf: "spark-als-recommender"
+  # model.name.cb: "sklearn-tfidf-vectorizer"
+
+  # Add other general configurations if needed by the application
+  # For example, if Spark jobs run on Kubernetes and need master URL:
+  # spark.master: "k8s://https://<kubernetes-api-server-url>" # Replace <kubernetes-api-server-url>
