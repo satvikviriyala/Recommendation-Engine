@@ -1,0 +1,28 @@
+# Core ML & Data
+pyspark[sql]==3.4.1 # Or latest stable Spark 3.x
+torch==2.0.1 # Or latest stable
+scikit-learn==1.3.0
+pandas==2.0.3
+numpy==1.25.2
+
+# MLOps
+mlflow==2.6.0 # Or latest stable
+
+# Serving
+fastapi==0.103.1
+uvicorn[standard]==0.23.2
+requests # For health checks etc.
+
+# Cloud SDKs (Choose based on target cloud)
+boto3 # For AWS
+google-cloud-storage # For GCP
+google-cloud-secret-manager # For GCP secrets
+
+# Utilities
+pyyaml==6.0.1
+python-dotenv==1.0.0
+joblib # For saving sklearn models
+
+# Optimization (Optional - if using ONNX)
+# onnx==1.14.1
+# onnxruntime==1.15.1

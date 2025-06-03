@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recsys-api-deployment
+  labels:
+    app: recsys-api
+spec:
+  replicas: 3 # Start with a few replicas, configure HPA later
+  selector:
+    matchLabels:
+      app: recsys-api
+  template:
+    metadata:
+      labels:
+        app: recsys-api
+    spec:
+      containers:
+      - name: recsys-api-container
+        # --- IMPORTANT: Replace with your actual image registry/name/tag ---
+        image: your-registry/your-repo/recsys-serve:latest
+        ports:
+        - containerPort: 8000
+        env:
+          # Pass environment variables from ConfigMaps or Secrets
+          - name: MLFLOW_TRACKING_URI
+            valueFrom:
+              configMapKeyRef:
+                name: recsys-config # Create this ConfigMap
+                key: mlflow.tracking.uri
+          - name: DATA_BUCKET
+            valueFrom:
+              configMapKeyRef:
+                name: recsys-config
+                key: data.bucket
+          - name: MODEL_ARTIFACT_BUCKET
+             valueFrom:
+              configMapKeyRef:
+                name: recsys-config
+                key: model.artifact.bucket
+          - name: MODEL_STAGE
+            value: "Production" # Or load from config/secret
+          # Add cloud credential configuration (e.g., service account annotation for GCP/AWS)
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m" # 0.25 vCPU
+          limits:
+            memory: "1Gi"
+            cpu: "1000m" # 1 vCPU
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 3
+      # Add service account name if using IAM roles for cloud access
+      # serviceAccountName: your-k8s-service-account

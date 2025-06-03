@@ -1,0 +1,27 @@
+# Use a base image with Spark and Python (e.g., bitnami/spark, official apache/spark-py)
+FROM apache/spark-py:v3.4.1 # Choose version matching requirements
+
+# Set working directory
+WORKDIR /app
+
+# Set environment variables needed for the job
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI} \
+    DATA_BUCKET=${DATA_BUCKET} \
+    MODEL_ARTIFACT_BUCKET=${MODEL_ARTIFACT_BUCKET} \
+    # GOOGLE_APPLICATION_CREDENTIALS=/path/inside/container/keyfile.json # Mount secret
+
+# Install Python dependencies for the job
+COPY requirements.txt .
+# Install only necessary dependencies for the Spark job
+RUN pip install --no-cache-dir pyspark==3.4.1 mlflow==2.6.0 pandas pyyaml python-dotenv scikit-learn joblib scipy google-cloud-storage boto3
+
+# Copy application code
+COPY ./src /app/src
+COPY ./configs /app/configs
+
+# Entrypoint (optional - makes it easier to run)
+# ENTRYPOINT ["spark-submit"]
+# CMD ["/app/src/data_processing/spark_job.py"]
+# Example run command: docker run --env-file .env your-spark-image spark-submit /app/src/data_processing/spark_job.py

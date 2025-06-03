@@ -1,0 +1,42 @@
+# Data Simulation Config
+simulation:
+  num_users: 10000       # Simulate smaller scale locally, extrapolate concepts
+  num_items: 5000
+  num_interactions: 500000 # ~50 interactions/user avg
+  output_path: "data/simulated/" # Local path for generated data
+
+# Spark Data Processing Config
+data_processing:
+  raw_interactions_path: "${DATA_BUCKET}/raw/interactions.parquet"
+  raw_items_path: "${DATA_BUCKET}/raw/items.parquet"
+  processed_data_path: "${DATA_BUCKET}/processed/"
+  user_map_path: "${DATA_BUCKET}/processed/mappings/user_map.parquet"
+  item_map_path: "${DATA_BUCKET}/processed/mappings/item_map.parquet"
+  spark_app_name: "RecSysDataProcessing"
+
+# Spark ALS Model Config (Collaborative Filtering)
+als_model:
+  rank: 10
+  maxIter: 10
+  regParam: 0.1
+  coldStartStrategy: "drop"
+  output_path: "${MODEL_ARTIFACT_BUCKET}/spark_als/" # Base path for factors
+
+# TF-IDF Model Config (Content-Based)
+tfidf_model:
+  max_features: 10000
+  min_df: 5
+  output_vectorizer_path: "${MODEL_ARTIFACT_BUCKET}/sklearn_tfidf/vectorizer.joblib"
+  output_matrix_path: "${MODEL_ARTIFACT_BUCKET}/sklearn_tfidf/item_matrix.npz" # Sparse matrix
+
+# MLflow Config
+mlflow_config:
+  experiment_name: "ScalableRecSys"
+  cf_model_name: "spark-als-recommender" # Must match .env MODEL_NAME_CF
+  cb_model_name: "sklearn-tfidf-vectorizer" # Must match .env MODEL_NAME_CB
+
+# Serving Config
+serving:
+  port: 8000
+  host: "0.0.0.0"
+  top_k_recommendations: 10

@@ -1,0 +1,23 @@
+# Local MLflow Tracking Server URI
+MLFLOW_TRACKING_URI=http://127.0.0.1:5000
+
+# Cloud Storage Paths (Replace with your buckets/paths)
+# AWS Example:
+# DATA_BUCKET=s3://your-recsys-data-bucket
+# MODEL_ARTIFACT_BUCKET=s3://your-recsys-model-bucket
+# GCP Example:
+DATA_BUCKET=gs://your-recsys-data-bucket
+MODEL_ARTIFACT_BUCKET=gs://your-recsys-model-bucket
+
+# Cloud Credentials (Better handled by instance roles/service accounts in deployment)
+# AWS_ACCESS_KEY_ID=YOUR_KEY
+# AWS_SECRET_ACCESS_KEY=YOUR_SECRET
+# GOOGLE_APPLICATION_CREDENTIALS=/path/to/your/keyfile.json
+
+# Spark Config (Local Example)
+SPARK_MASTER=local[*]
+
+# Serving Config
+MODEL_NAME_CF=spark-als-recommender
+MODEL_NAME_CB=sklearn-tfidf-vectorizer
+MODEL_STAGE=Production # Stage to load from MLflow Registry
